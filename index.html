@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cookie to cookies.txt Converter</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            line-height: 1.5;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        label {
+            font-weight: bold;
+        }
+        input, textarea {
+            padding: 0.5rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        #output {
+            white-space: pre;
+            background-color: #f5f5f5;
+            padding: 1rem;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Cookie to cookies.txt Converter</h1>
+        
+        <div class="input-group">
+            <label for="domain">Domain:</label>
+            <input type="text" id="domain" placeholder="example.com" />
+        </div>
+        
+        <div class="input-group">
+            <label for="cookies">Cookies:</label>
+            <textarea id="cookies" rows="5" placeholder="name1=value1; name2=value2;"></textarea>
+        </div>
+        
+        <div class="input-group">
+            <label>Output (cookies.txt format):</label>
+            <div id="output"># Domain     Tailmatch  Path  Secure  Expires  Name  Value</div>
+        </div>
+    </div>
+
+    <script>
+        function formatDomain(domain) {
+            domain = domain.trim();
+            // Count the dots in the domain
+            const dotCount = (domain.match(/\./g) || []).length;
+            // If it's a root domain (only one dot), add a leading dot
+            if (dotCount === 1 && !domain.startsWith('.')) {
+                return '.' + domain;
+            }
+            return domain;
+        }
+
+        function convertCookies() {
+            const domain = formatDomain(document.getElementById('domain').value.trim());
+            const cookiesInput = document.getElementById('cookies').value;
+            const output = document.getElementById('output');
+            
+            // Start with header
+            let result = '# Domain     Tailmatch  Path  Secure  Expires  Name  Value\n';
+            
+            // Split cookies by semicolon and process each one
+            const cookiePairs = cookiesInput.split(';')
+                .map(pair => pair.trim())
+                .filter(pair => pair.length > 0 && pair.includes('='));
+
+            cookiePairs.forEach(pair => {
+                const [name, ...valueParts] = pair.split('=');
+                // Join value parts back together in case the value contains =
+                const value = valueParts.join('=');
+                
+                if (name && value) {
+                    result += `${domain}\tTRUE\t/\tFALSE\t0\t${name.trim()}\t${value.trim()}\n`;
+                }
+            });
+            
+            output.textContent = result.trim();
+        }
+
+        // Add event listeners
+        document.getElementById('domain').addEventListener('input', convertCookies);
+        document.getElementById('cookies').addEventListener('input', convertCookies);
+    </script>
+</body>
+</html>
